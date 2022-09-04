@@ -73,7 +73,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-      -run:
+      - run:
         name: Run frontend test
         command: |
           cd frontend
@@ -86,7 +86,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-      -run:
+      - run:
         name: Run backend test
         command: |
           cd backend
