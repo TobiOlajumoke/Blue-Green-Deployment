@@ -1,14 +1,20 @@
 version: 2.1
 
+parameters:
+  workflow_id:
+    type: string
+    default: '${CIRCLE_WORKFLOW_ID}'
+
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
+      # Add parameter here
       workflow_id:
         type: string
     steps:
       - run:
-          name: destroy-environment
+          name: Destroy environments
           when: on_fail
           command: |
             aws cloudformation delete-stack \
@@ -20,21 +26,22 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
+      # Add parameter here
+      workflow_id:
         type: string
-        default: None      # Add parameter here     
     steps:
       - run:
           name: Revert migrations
           when: on_fail
+          # Add when this will run
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl --insecure https://kvdb.io/4piwRqQ799y2e7Mq18z2CM/migration_<< parameters.ID >>)
+            SUCCESS=$(curl --insecure https://kvdb.io/4piwRqQ799y2e7Mq18z2CM/migration_${CIRCLE_WORKFLOW_ID:0:7})
             echo $SUCCESS
-            if(( $SUCCESS==1 )); 
+            if (($SUCCESS == 1))
             then
               cd ~/project/backend
-              npm install
-              npm run migration:revert
+              npm install > /dev/null
+              npm run migrations:revert
             fi
             
 jobs:
@@ -215,7 +222,8 @@ jobs:
             then
               curl -k https://kvdb.io/4piwRqQ799y2e7Mq18z2CM/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - revert-migrations
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 
 #   deploy-frontend:
