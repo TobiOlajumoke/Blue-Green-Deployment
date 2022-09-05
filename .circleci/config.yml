@@ -196,6 +196,7 @@ jobs:
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
+    steps:
       - checkout
       - restore_cache:
           keys: [backend-build]
@@ -213,8 +214,8 @@ jobs:
             then
               curl -k https://kvdb.io/4piwRqQ799y2e7Mq18z2CM/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - destroy-environment:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+      - revert-migrations
+
 
 #   deploy-frontend:
 #     docker:
