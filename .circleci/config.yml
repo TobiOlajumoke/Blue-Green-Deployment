@@ -8,7 +8,7 @@ commands:
         type: string
     steps:
       - run:
-          name: Destroy environments
+          name: destroy-environment
           when: on_fail
           command: |
             aws cloudformation delete-stack \
