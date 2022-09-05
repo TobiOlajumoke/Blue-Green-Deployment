@@ -173,13 +173,9 @@ jobs:
 
   configure-infrastructure:
     docker:
-      # Docker image here that supports Ansible
       - image: python:3.10-alpine3.16
-      # - image: amazon/aws-cli
     steps:
-      # Checkout code from git
       - checkout
-      # Add ssh keys with fingerprint
       - add_ssh_keys:
           fingerprints:
             - '24:41:3f:2e:9c:75:bd:2c:7d:e9:84:2c:07:6b:77:b9'
@@ -187,26 +183,18 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update --no-cache tar gzip ansible aws-cli
-      # attach workspace
       - attach_workspace:
           at: ~/
-      # - restore_cache:
-      #     keys: [backend-build]
       - run:
           name: Configure server
           command: |
-
-      # save backend back to workspace
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/backend
-      # Here's where you will add some code to rollback on failure
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 #   run-migrations:
-#     docker:
+#     docker:s
 #       # Docker image here that supports NodeJS
 #     steps:
 #       # Checkout code from git
