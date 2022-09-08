@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  slack: circleci/slack@4.1
 
 parameters:
   workflow_id:
@@ -17,11 +19,21 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
+            echo "Destroying environment: << parameters.workflow_id >>"
             aws cloudformation delete-stack \
-            --stack-name udapeople-backend-<<parameters.workflow_id>>
+              --stack-name prometheus-<<parameters.workflow_id>>
+            aws cloudformation delete-stack \
+              --stack-name cloudfront-<<parameters.workflow_id>>
+            aws cloudformation delete-stack \
+              --stack-name database-<<parameters.workflow_id>>
+            aws s3 rm s3://udapeople-$(<<parameters.workflow_id>>:0:5) --recursive
+            aws cloudformation delete-stack \
+              --stack-name starter-frontend-<<parameters.workflow_id>>
+            aws cloudformation delete-stack \
+              --stack-name udapeople-backend-<<parameters.workflow_id>>
             aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
             aws cloudformation delete-stack \
-            --stack-name udapeople-frontend-<<parameters.workflow_id>>
+              --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -299,7 +311,10 @@ jobs:
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7} 
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - slack/notify:
+          event: fail
+          template: basic_fail_1          
           
   smoke-test:
     docker:
@@ -413,6 +428,9 @@ jobs:
             else
               echo "Stack is the latest"
             fi
+      - slack/notify:
+          event: pass
+          template: basic_fail_1            
 workflows:
   default:
     jobs:
