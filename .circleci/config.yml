@@ -428,9 +428,6 @@ jobs:
             else
               echo "Stack is the latest"
             fi
-      - slack/notify:
-          event: pass
-          template: basic_fail_1            
 workflows:
   default:
     jobs:
